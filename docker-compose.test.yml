@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: ticketing_test
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"
+
+  ticket-service:
+    build: ./ticket-service
+    environment:
+      DB_USER: test_user
+      DB_PASSWORD: test_password
+      DB_NAME: ticketing_test
+      DB_HOST: postgres
+    depends_on:
+      - postgres
+
+  support-service:
+    build: ./support-service
+    environment:
+      DB_USER: test_user
+      DB_PASSWORD: test_password
+      DB_NAME: ticketing_test
+      DB_HOST: postgres
+    depends_on:
+      - postgres
+
+  notification-service:
+    build: ./notification-service
+
+  reporting-service:
+    build: ./reporting-service
+    environment:
+      DB_USER: test_user
+      DB_PASSWORD: test_password
+      DB_NAME: ticketing_test
+      DB_HOST: postgres
+    depends_on:
+      - postgres
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8082:80"
+    depends_on:
+      - ticket-service
+      - support-service
+      - reporting-service
