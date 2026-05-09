@@ -9,6 +9,7 @@ services:
       POSTGRES_DB: ticketing_prod
     volumes:
       - ./db-init:/docker-entrypoint-initdb.d
+      - postgres_prod_data:/var/lib/postgresql/data
     ports:
       - "5434:5432"
     restart: always
@@ -59,3 +60,6 @@ services:
       - support-service
       - reporting-service
     restart: always
+
+volumes:
+  postgres_prod_data:

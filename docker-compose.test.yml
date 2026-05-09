@@ -9,6 +9,7 @@ services:
       POSTGRES_DB: ticketing_test
     volumes:
       - ./db-init:/docker-entrypoint-initdb.d
+      - postgres_test_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
 
@@ -53,3 +54,6 @@ services:
       - ticket-service
       - support-service
       - reporting-service
+
+volumes:
+  postgres_test_data:
