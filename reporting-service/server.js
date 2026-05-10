@@ -97,5 +97,7 @@ app.get('/api/reports/tickets', async (req, res) => {
     }
 });
 
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+
 const PORT = process.env.PORT || 3004;
 app.listen(PORT, () => console.log(`Reporting Service running on port ${PORT}`));

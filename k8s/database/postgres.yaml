@@ -36,22 +36,12 @@ data:
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: postgres-data-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: postgres
 spec:
+  serviceName: postgres
   replicas: 1
   selector:
     matchLabels:
@@ -66,13 +56,32 @@ spec:
         image: postgres:15-alpine
         env:
         - name: POSTGRES_USER
-          value: "k8s_user"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USER
         - name: POSTGRES_PASSWORD
-          value: "k8s_password"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_PASSWORD
         - name: POSTGRES_DB
-          value: "ticketing"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_NAME
         ports:
         - containerPort: 5432
+        readinessProbe:
+          exec:
+            command: ['pg_isready', '-U', 'k8s_user', '-d', 'ticketing']
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command: ['pg_isready', '-U', 'k8s_user', '-d', 'ticketing']
+          initialDelaySeconds: 15
+          periodSeconds: 20
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
@@ -80,12 +89,18 @@ spec:
           mountPath: /docker-entrypoint-initdb.d/init.sql
           subPath: init.sql
       volumes:
-      - name: postgres-data
-        persistentVolumeClaim:
-          claimName: postgres-data-pvc
       - name: postgres-init
         configMap:
           name: postgres-init-script
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
@@ -93,6 +108,7 @@ metadata:
   name: postgres
 spec:
   type: ClusterIP
+  clusterIP: None
   selector:
     app: postgres
   ports:

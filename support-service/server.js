@@ -105,5 +105,7 @@ app.post('/:id/resolve', async (req, res) => {
     }
 });
 
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+
 const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => console.log(`Support Service running on port ${PORT}`));
