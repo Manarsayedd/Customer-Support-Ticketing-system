@@ -19,6 +19,9 @@ app.post('/:id/assign', async (req, res) => {
     if (!support_agent) return res.status(400).json({ error: 'support_agent is required' });
 
     try {
+        const ticketRes = await pool.query('SELECT email FROM tickets WHERE id = $1', [ticketId]);
+        const email = ticketRes.rows[0]?.email;
+
         await pool.query(
             'INSERT INTO support_assignments (ticket_id, support_agent) VALUES ($1, $2)',
             [ticketId, support_agent]
@@ -33,7 +36,7 @@ app.post('/:id/assign', async (req, res) => {
             await fetch('http://notification-service:3003/notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: `Ticket #${ticketId} assigned to ${support_agent}`, ticketId })
+                body: JSON.stringify({ message: `Ticket #${ticketId} assigned to ${support_agent}`, ticketId, email })
             });
         } catch (e) { console.error('Notification failed:', e.message); }
 
@@ -51,6 +54,9 @@ app.post('/:id/respond', async (req, res) => {
     if (!agent || !message) return res.status(400).json({ error: 'agent and message are required' });
 
     try {
+        const ticketRes = await pool.query('SELECT email FROM tickets WHERE id = $1', [ticketId]);
+        const email = ticketRes.rows[0]?.email;
+
         const result = await pool.query(
             'INSERT INTO ticket_responses (ticket_id, agent, message) VALUES ($1, $2, $3) RETURNING *',
             [ticketId, agent, message]
@@ -63,7 +69,7 @@ app.post('/:id/respond', async (req, res) => {
             await fetch('http://notification-service:3003/notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: `New response on ticket #${ticketId} from ${agent}`, ticketId })
+                body: JSON.stringify({ message: `New response on ticket #${ticketId} from ${agent}`, ticketId, email })
             });
         } catch (e) { console.error('Notification failed:', e.message); }
 
@@ -80,6 +86,9 @@ app.post('/:id/resolve', async (req, res) => {
     const { resolution_notes } = req.body;
 
     try {
+        const ticketRes = await pool.query('SELECT email FROM tickets WHERE id = $1', [ticketId]);
+        const email = ticketRes.rows[0]?.email;
+
         await pool.query(
             'UPDATE tickets SET status = $1, updated_at = NOW() WHERE id = $2',
             ['RESOLVED', ticketId]
@@ -94,7 +103,7 @@ app.post('/:id/resolve', async (req, res) => {
             await fetch('http://notification-service:3003/notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: `Ticket #${ticketId} has been resolved.`, ticketId })
+                body: JSON.stringify({ message: `Ticket #${ticketId} has been resolved.`, ticketId, email })
             });
         } catch (e) { console.error('Notification failed:', e.message); }
 

@@ -14,14 +14,14 @@ const pool = new Pool({
 
 // ── Create a ticket (Customer) ─────────────────────────────────────────────────
 app.post('/api/tickets', async (req, res) => {
-    const { title, description, submitted_by } = req.body;
-    if (!title || !description || !submitted_by) {
-        return res.status(400).json({ error: 'title, description, and submitted_by are required' });
+    const { title, description, submitted_by, email } = req.body;
+    if (!title || !description || !submitted_by || !email) {
+        return res.status(400).json({ error: 'title, description, submitted_by, and email are required' });
     }
     try {
         const result = await pool.query(
-            'INSERT INTO tickets (title, description, submitted_by) VALUES ($1, $2, $3) RETURNING *',
-            [title, description, submitted_by.trim()]
+            'INSERT INTO tickets (title, description, submitted_by, email) VALUES ($1, $2, $3, $4) RETURNING *',
+            [title, description, submitted_by.trim(), email.trim()]
         );
         const newTicket = result.rows[0];
 
@@ -32,7 +32,8 @@ app.post('/api/tickets', async (req, res) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: `New ticket created by ${submitted_by}: ${title}`,
-                    ticketId: newTicket.id
+                    ticketId: newTicket.id,
+                    email: newTicket.email
                 })
             });
         } catch (e) {

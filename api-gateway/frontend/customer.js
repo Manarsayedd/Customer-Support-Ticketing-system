@@ -167,6 +167,7 @@ async function loadResponses(id){
 document.getElementById('ticketForm').addEventListener('submit',async e=>{
     e.preventDefault();
     const title=document.getElementById('ticketTitle').value.trim();
+    const email=document.getElementById('ticketEmail').value.trim();
     const description=document.getElementById('ticketDesc').value.trim();
     const btn=document.getElementById('submitBtn');
     const lbl=document.getElementById('submitLabel');
@@ -175,7 +176,7 @@ document.getElementById('ticketForm').addEventListener('submit',async e=>{
     try{
         const res=await fetch('/api/tickets',{
             method:'POST', headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({title,description,submitted_by:currentUser})
+            body:JSON.stringify({title,description,submitted_by:currentUser,email})
         });
         if(!res.ok){ const b=await res.json().catch(()=>({})); throw new Error(b.error??`HTTP ${res.status}`); }
         document.getElementById('ticketForm').reset();

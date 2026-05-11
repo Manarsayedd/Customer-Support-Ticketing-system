@@ -35,6 +35,13 @@ services:
 
   notification-service:
     build: ./notification-service
+    environment:
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_SECURE: "false"
+      SMTP_USER: amaamoun99@gmail.com
+      SMTP_PASS: dnof wgfc rfwi nxdb
+      SMTP_FROM: "Support <amaamoun99@gmail.com>"
 
   reporting-service:
     build: ./reporting-service

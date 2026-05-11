@@ -16,6 +16,37 @@ spec:
       - name: notification-service
         image: notification-service:latest
         imagePullPolicy: Never
+        env:
+        - name: SMTP_HOST
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: SMTP_HOST
+        - name: SMTP_PORT
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: SMTP_PORT
+        - name: SMTP_SECURE
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: SMTP_SECURE
+        - name: SMTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: SMTP_USER
+        - name: SMTP_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: SMTP_PASS
+        - name: SMTP_FROM
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: SMTP_FROM
         ports:
         - containerPort: 3003
         readinessProbe:

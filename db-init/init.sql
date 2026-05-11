@@ -6,6 +6,7 @@ CREATE TABLE tickets (
     status VARCHAR(50) DEFAULT 'OPEN',
     priority VARCHAR(20) DEFAULT 'MEDIUM',
     submitted_by VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
     assigned_agent VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
